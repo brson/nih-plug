@@ -79,7 +79,7 @@ pub fn main_with_args(command_name: &str, args: impl IntoIterator<Item = String>
     match command.as_str() {
         "bundle" => {
             // For convenience's sake we'll allow building multiple packages with `-p` just like
-            // carg obuild, but you can also build a single package without specifying `-p`. Since
+            // cargo build, but you can also build a single package without specifying `-p`. Since
             // multiple packages can be built in parallel if we pass all of these flags to a single
             // `cargo build` we'll first build all of these packages and only then bundle them.
             let mut args = args.peekable();
@@ -126,8 +126,8 @@ pub fn chdir_workspace_root() -> Result<()> {
     std::env::set_current_dir(project_root).context("Could not change to project root directory")
 }
 
-/// Build one or more packages using the provided `cargo build` arguments. This should be caleld
-/// before callingq [`bundle()`]. This requires the current working directory to have been set to
+/// Build one or more packages using the provided `cargo build` arguments. This should be called
+/// before calling [`bundle()`]. This requires the current working directory to have been set to
 /// the workspace's root using [`chdir_workspace_root()`].
 pub fn build(packages: &[String], args: &[String]) -> Result<()> {
     let package_args = packages.iter().flat_map(|package| ["-p", package]);
@@ -199,6 +199,10 @@ pub fn bundle(package: &str, args: &[String]) -> Result<()> {
     let target_base = target_base(cross_compile_target.as_deref())?.join(build_type_dir);
     let bin_path = target_base.join(binary_basename(package, compilation_target));
     let lib_path = target_base.join(library_basename(package, compilation_target));
+    let cwd = std::env::current_dir();
+    println!("--- {cwd:?}");
+    println!("--- {lib_path:?}");
+    println!("--- {bin_path:?}");
     if !bin_path.exists() && !lib_path.exists() {
         bail!("Could not find built library at '{}'", lib_path.display());
     }
